@@ -14,11 +14,22 @@
         @csrf
         <div class="mb-3">
           <label for="email" class="form-label">Email address</label>
-          <input type="email" class="form-control" id="email" placeholder="Enter your email" name="email" required>
+          <input type="email" class="form-control @error('email') is-invalid @enderror" id="email" placeholder="Enter your email" name="email" required>
+          <!-- error message untuk title -->
+          @error('email')
+            <div class="alert alert-danger mt-2">
+                {{ $message }}
+            </div>
+          @enderror
         </div>
         <div class="mb-3">
           <label for="password" class="form-label">Password</label>
-          <input type="password" class="form-control" id="password" placeholder="Enter your password" name="password" required>
+          <input type="password" class="form-control @error('email') is-invalid @enderror" id="password" placeholder="Enter your password" name="password" required>
+          @error('password')
+            <div class="alert alert-danger mt-2">
+                {{ $message }}
+            </div>
+          @enderror
         </div>
         <button type="submit" class="btn btn-primary w-100">Login</button>
       </form>
