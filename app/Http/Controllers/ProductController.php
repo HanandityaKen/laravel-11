@@ -10,6 +10,8 @@ use Illuminate\Http\RedirectResponse;
 
 use Illuminate\Http\Request;
 
+use Illuminate\Support\Str;
+
 use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
@@ -36,17 +38,23 @@ class ProductController extends Controller
             'description'   => 'required|min:10',
             'price'         => 'required|numeric',
             'stock'         => 'required|numeric',
+            'file'          => 'required|mimes:pdf|max:5120',
         ]);
 
         $images = $request->file('images');
         $images->storeAs('public/products', $images->hashName());
 
+        $file = $request->file('file');
+        $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension(); // UUID dengan ekstensi file
+        $file->storeAs('public/products/file', $fileName);
+
         Product::create([
-            'images'             => $images->hashName(),
+            'images'            => $images->hashName(),
             'title'             => $request->title,
             'description'       => $request->description,
             'price'             => $request->price,
             'stock'             => $request->stock,
+            'file'              => $fileName,
         ]);
 
         return redirect()->route('products.index')->with(['success' => 'Data Berhasil Disimpan!']);
@@ -74,35 +82,65 @@ class ProductController extends Controller
             'description'   => 'required|min:10',
             'price'         => 'required|numeric',
             'stock'         => 'required|numeric',
+            'file'          => 'mimes:pdf|max:5120',
         ]);
 
         $product = Product::findOrFail($id);
 
-        if ($request->hasFile('images')) {
+        // if ($request->hasFile('images')) {
 
 
-            //upload new image
-            $images = $request->file('image');
-            $images->storeAs('/public/products', $images->hashName());
+        //     //upload new image
+        //     $images = $request->file('image');
+        //     $images->storeAs('/public/products', $images->hashName());
 
-            //delete
+        //     //delete
+        //     Storage::delete('public/products/'.$product->images);
+
+        //     $product->update([
+        //         'image'                 => $image->hashName(),
+        //         'title'                 => $request->title,
+        //         'description'           => $request->description,
+        //         'price'                 => $request->price,
+        //         'stock'                 => $request->stock,
+        //     ]);
+        // } else {
+        //     $product->update([
+        //         'title'                 => $request->title,
+        //         'description'           => $request->description,
+        //         'price'                 => $request->price,
+        //         'stock'                 => $request->stock,
+        //     ]);
+        // }
+
+        if ($request->file('images')) {
+            // delete
             Storage::delete('public/products/'.$product->images);
 
-            $product->update([
-                'image'                 => $image->hashName(),
-                'title'                 => $request->title,
-                'description'           => $request->description,
-                'price'                 => $request->price,
-                'stock'                 => $request->stock,
-            ]);
-        } else {
-            $product->update([
-                'title'                 => $request->title,
-                'description'           => $request->description,
-                'price'                 => $request->price,
-                'stock'                 => $request->stock,
-            ]);
+            $images = $request->file('images');
+            $images->storeAs('/public/products', $images->hashName());
+
+            $product->images = $images->hashName();
+
         }
+
+        if ($request->file('file')) {
+            Storage::delete('public/products/file/'.$product->file);
+
+            $file = $request->file('file');
+            $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension(); // UUID dengan ekstensi file
+            $file->storeAs('public/products/file', $fileName);
+
+            $product->file = $fileName;
+
+        }
+
+        $product->update([
+            'title'                 => $request->title,
+            'description'           => $request->description,
+            'price'                 => $request->price,
+            'stock'                 => $request->stock,
+        ]);
 
         return redirect()->route('products.index')->with(['success' => 'Data Berhasil DIubah!']);
 
@@ -113,6 +151,8 @@ class ProductController extends Controller
         $product = Product::findOrFail($id);
 
         Storage::delete('public/products/'. $product->images);
+
+        Storage::delete('public/products/file'. $product->file);
 
         $product->delete();
 

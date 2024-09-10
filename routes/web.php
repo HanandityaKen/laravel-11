@@ -14,7 +14,6 @@ Route::post('/logout', [\App\Http\Controllers\LoginController::class, 'logout'])
 Route::middleware(['auth'])->group(function () {
   //user
   Route::resource('/products', \App\Http\Controllers\ProductController::class);
-  Route::get('/products', [\App\Http\Controllers\ProductController::class, 'index']);
   //admin
   Route::get('/user', [\App\Http\Controllers\UserController::class, 'index']);
 });

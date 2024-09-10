@@ -83,6 +83,16 @@
                                 </div>
                             </div>
 
+                            <div class="form-group mb-3">
+                                <label class="font-weight-bold" for="">File</label>
+                                <input type="file" class="form-control @error('file') is-invalid @enderror" name="file" value="{{ old('file')}}" placeholder="Masukan File">
+                                @error('file')
+                                    <div class="alert alert-danger mt-2">
+                                        {{ $message }}
+                                    </div>
+                                @enderror
+                            </div>
+
                             <button type="submit" class="btn btn-md btn-primary me-3">SAVE</button>
                             <button type="reset" class="btn btn-md btn-warning">RESET</button>
 

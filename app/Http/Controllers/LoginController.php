@@ -47,11 +47,6 @@ class LoginController extends Controller
         ]);
     }
 
-    // public function store(Request $request)
-    // {
-    //     # code...
-    // }
-
     public function logout(Request $request)
     {
         Auth::logout();
