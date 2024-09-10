@@ -12,10 +12,10 @@ Route::post('/logout', [\App\Http\Controllers\LoginController::class, 'logout'])
 
 //halaman product
 Route::middleware(['auth'])->group(function () {
-  //user
-  Route::resource('/products', \App\Http\Controllers\ProductController::class);
   //admin
-  Route::get('/user', [\App\Http\Controllers\UserController::class, 'index']);
+  Route::resource('/products', \App\Http\Controllers\ProductController::class);
+  //user
+  // Route::get('/user', [\App\Http\Controllers\UserController::class, 'index']);
 });
 
 // // Register

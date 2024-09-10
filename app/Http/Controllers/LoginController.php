@@ -23,23 +23,23 @@ class LoginController extends Controller
         ]);
 
     
-        // if (Auth::attempt($data)) {
-        //     $request->session()->regenerate();
-    
-        //     return redirect()->intended('/products'); // Atau ke halaman yang diinginkan
-        // }
-
         if (Auth::attempt($data)) {
             $request->session()->regenerate();
-
-            $role = Auth::user()->role;
-
-            if ($role === 'admin') {
-                return redirect()->intended('/products');
-            } elseif ($role === 'user') {
-                return redirect()->intended('/user');
-            } 
+    
+            return redirect()->intended('/products'); // Atau ke halaman yang diinginkan
         }
+
+        // if (Auth::attempt($data)) {
+        //     $request->session()->regenerate();
+
+        //     $role = Auth::user()->role;
+
+        //     if ($role === 'admin') {
+        //         return redirect()->intended('/products');
+        //     } elseif ($role === 'user') {
+        //         return redirect()->intended('/user');
+        //     } 
+        // }
 
         return back()->withErrors([
             'email' => 'email salah',

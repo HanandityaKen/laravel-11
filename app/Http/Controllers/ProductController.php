@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 
+use App\Models\User;
+
 use Illuminate\View\View;
 
 use Illuminate\Http\RedirectResponse;
@@ -14,6 +16,8 @@ use Illuminate\Support\Str;
 
 use Illuminate\Support\Facades\Storage;
 
+use Illuminate\Support\Facades\Auth;
+
 class ProductController extends Controller
 {
     
@@ -21,17 +25,26 @@ class ProductController extends Controller
     public function index() : View
     {
         $products = Product::latest()->paginate(10);
+        $role = Auth::user()->role;
 
-        return view('products.index', compact('products'));
+        return view('products.index', compact('products', 'role'));
     }
 
     public function create() : View
     {
+        if (Auth::user()->role !== 'admin') {
+            abort(403, 'Unauthorized action.');
+        }
+        
         return view('products.create');
     }
 
     public function store(Request $request): RedirectResponse
     {
+        if (Auth::user()->role !== 'admin') {
+            abort(403, 'Unauthorized action.');
+        }
+
         $request->validate([
             'images'         => 'required|image|mimes:jpeg,jpg,png,img|max:2048',
             'title'         => 'required|min:5',
@@ -69,6 +82,10 @@ class ProductController extends Controller
 
     public function edit(string $id): View
     {
+        if (Auth::user()->role !== 'admin') {
+            abort(403, 'Unauthorized action.');
+        }
+
         $product = Product::findOrFail($id);
 
         return view('products.edit', compact('product'));
@@ -76,6 +93,10 @@ class ProductController extends Controller
 
     public function update(Request $request, $id): RedirectResponse
     {
+        if (Auth::user()->role !== 'admin') {
+            abort(403, 'Unauthorized action.'); // Mengembalikan status 403 jika akses ditolak
+        }
+
         $request->validate([
             'images'        => 'image|mimes:jpeg,jpg,png,img|max:2048',
             'title'         => 'required|min:5',
@@ -86,32 +107,6 @@ class ProductController extends Controller
         ]);
 
         $product = Product::findOrFail($id);
-
-        // if ($request->hasFile('images')) {
-
-
-        //     //upload new image
-        //     $images = $request->file('image');
-        //     $images->storeAs('/public/products', $images->hashName());
-
-        //     //delete
-        //     Storage::delete('public/products/'.$product->images);
-
-        //     $product->update([
-        //         'image'                 => $image->hashName(),
-        //         'title'                 => $request->title,
-        //         'description'           => $request->description,
-        //         'price'                 => $request->price,
-        //         'stock'                 => $request->stock,
-        //     ]);
-        // } else {
-        //     $product->update([
-        //         'title'                 => $request->title,
-        //         'description'           => $request->description,
-        //         'price'                 => $request->price,
-        //         'stock'                 => $request->stock,
-        //     ]);
-        // }
 
         if ($request->file('images')) {
             // delete
@@ -148,6 +143,10 @@ class ProductController extends Controller
 
     public function destroy($id): RedirectResponse
     {
+        if (Auth::user()->role !== 'admin') {
+            abort(403, 'Unauthorized action.'); // Mengembalikan status 403 jika akses ditolak
+        }
+
         $product = Product::findOrFail($id);
 
         Storage::delete('public/products/'. $product->images);
