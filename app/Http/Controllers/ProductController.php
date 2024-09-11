@@ -32,21 +32,16 @@ class ProductController extends Controller
 
     public function create() : View
     {
-        if (Auth::user()->role !== 'admin') {
-            abort(403, 'Unauthorized action.');
-        }
-        
+
+        // dd('Halaman Create');
+
         return view('products.create');
     }
 
     public function store(Request $request): RedirectResponse
     {
-        if (Auth::user()->role !== 'admin') {
-            abort(403, 'Unauthorized action.');
-        }
-
         $request->validate([
-            'images'         => 'required|image|mimes:jpeg,jpg,png,img|max:2048',
+            'images'        => 'required|image|mimes:jpeg,jpg,png,img|max:2048',
             'title'         => 'required|min:5',
             'description'   => 'required|min:10',
             'price'         => 'required|numeric',
@@ -82,9 +77,6 @@ class ProductController extends Controller
 
     public function edit(string $id): View
     {
-        if (Auth::user()->role !== 'admin') {
-            abort(403, 'Unauthorized action.');
-        }
 
         $product = Product::findOrFail($id);
 
@@ -93,9 +85,6 @@ class ProductController extends Controller
 
     public function update(Request $request, $id): RedirectResponse
     {
-        if (Auth::user()->role !== 'admin') {
-            abort(403, 'Unauthorized action.'); // Mengembalikan status 403 jika akses ditolak
-        }
 
         $request->validate([
             'images'        => 'image|mimes:jpeg,jpg,png,img|max:2048',
@@ -143,9 +132,6 @@ class ProductController extends Controller
 
     public function destroy($id): RedirectResponse
     {
-        if (Auth::user()->role !== 'admin') {
-            abort(403, 'Unauthorized action.'); // Mengembalikan status 403 jika akses ditolak
-        }
 
         $product = Product::findOrFail($id);
 
