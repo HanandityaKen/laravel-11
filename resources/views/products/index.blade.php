@@ -112,10 +112,10 @@
                 columns: [
                     {data: 'image', name: 'image', orderable: false},
                     {data: 'title', name: 'title'},
-                    {data: 'price', name: 'price'},
-                    {data: 'description', name: 'description'},
-                    {data: 'stock', name: 'stock'},
-                    {data: 'file', name: 'file'},
+                    {data: 'price', name: 'price', searchable: false},
+                    {data: 'description', name: 'description', searchable: false},
+                    {data: 'stock', name: 'stock', searchable: false},
+                    {data: 'file', name: 'file', searchable: false},
                     {data: 'actions', name: 'actionse', orderable: false, searchable: false}
                 ]
             })
