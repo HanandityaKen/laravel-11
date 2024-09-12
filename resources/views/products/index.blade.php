@@ -1,18 +1,7 @@
-{{-- <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Data Products - SantriKoding.com</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-</head> --}}
-
 @extends('main')
 
 @section('content')
     
-<body style="background: lightgray">
 
     <div class="container mt-5">
         <div class="row">
@@ -22,7 +11,20 @@
                         @if ($role === 'admin')
                             <a href="{{ route('products.create') }}" class="btn btn-md btn-success mb-3">ADD PRODUCT</a>
                         @endif
-                        <table class="table table-bordered">
+                        <table id="productsTable" class="table">
+                            <thead>
+                                <tr>
+                                    <th>Image</th>
+                                    <th>Title</th>
+                                    <th>Price</th>
+                                    <th>Description</th>
+                                    <th>Stock</th>
+                                    <th>File</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                        </table>
+                        {{-- <table class="table table-bordered">
                             <thead>
                                 <tr>
                                     <th scope="col">IMAGE</th>
@@ -61,18 +63,21 @@
                                     </div>
                                 @endforelse
                             </tbody>
-                        </table>
-                        {{ $products->links() }}
+                        </table> --}}
+                        {{-- {{ $products->links() }}
+                        <div class="pagination">
+                            {{ $products->links() }}
+                        </div> --}}
+
                     </div>
                 </div>
             </div>
         </div>
     </div>
     
+@endsection
 
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+@push('scripts')
 
     <script>
         //message with sweetalert
@@ -94,10 +99,31 @@
             });
         @endif
 
+            
+    </script>
+
+    <script>
+
+        $(document).ready(function() {
+            $('#productsTable').DataTable({
+                processing:true,
+                serverside:true,
+                ajax: '{{ route ('products.data') }}',
+                columns: [
+                    {data: 'image', name: 'image', orderable: false},
+                    {data: 'title', name: 'title'},
+                    {data: 'price', name: 'price'},
+                    {data: 'description', name: 'description'},
+                    {data: 'stock', name: 'stock'},
+                    {data: 'file', name: 'file'},
+                    {data: 'actions', name: 'actionse', orderable: false, searchable: false}
+                ]
+            })
+        })
     </script>
 
 
+@endpush
 
-</body>
-@endsection
-</html>
+
+
