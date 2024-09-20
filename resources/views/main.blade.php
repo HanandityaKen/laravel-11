@@ -21,6 +21,21 @@
     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function checkLogin() {
+            const token = localStorage.getItem('token');
+            const email = sessionStorage.getItem('email');
+
+            console.log(token)
+            console.log(email)
+
+            if (!token || !email) {
+                window.location.href = "{{ route('login') }}"; // Ganti dengan rute login yang sesuai
+            }
+        }
+
+        checkLogin();
+    </script>
     
 
     @stack('scripts')

@@ -8,9 +8,10 @@
             <div class="col-md-12">
                 <div class="card border-0 shadow-sm rounded">
                     <div class="card-body">
-                        @if ($role === 'admin')
+                        {{-- @if ($role === 'admin')
                             <a href="{{ route('products.create') }}" class="btn btn-md btn-success mb-3">ADD PRODUCT</a>
-                        @endif
+                        @endif --}}
+                        <div id="roleActions"></div>
                         <table id="productsTable" class="table">
                             <thead>
                                 <tr>
@@ -79,48 +80,96 @@
 
 @push('scripts')
 
-    <script>
-        //message with sweetalert
-        @if(session('success'))
-            Swal.fire({
-                icon: "success",
-                title: "BERHASIL",
-                text: "{{ session('success') }}",
-                showConfirmButton: false,
-                timer: 2000
+<script>
+    // Fungsi untuk memeriksa apakah pengguna sudah login
+    // function checkLogin() {
+    //     const token = localStorage.getItem('token');
+    //     const email = sessionStorage.getItem('email');
+
+    //     console.log(token)
+    //     console.log(email)
+
+    //     if (!token || !email) {
+    //         window.location.href = "{{ route('login') }}"; // Ganti dengan rute login yang sesuai
+    //     }
+    // }
+
+    // checkLogin();
+
+    // SweetAlert message
+    @if(session('success'))
+        Swal.fire({
+            icon: "success",
+            title: "BERHASIL",
+            text: "{{ session('success') }}",
+            showConfirmButton: false,
+            timer: 2000
+        });
+    @elseif(session('error'))
+        Swal.fire({
+            icon: "error",
+            title: "GAGAL!",
+            text: "{{ session('error') }}",
+            showConfirmButton: false,
+            timer: 2000
+        });
+    @endif
+
+    $(document).ready(function() {
+        const token = localStorage.getItem('token');
+        console.log(token);
+
+        $('#productsTable').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: {
+                url: '{{ route('products.data.api') }}',
+                type: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json'
+                }
+            },
+            columns: [
+                {data: 'image', name: 'image', orderable: false},
+                {data: 'title', name: 'title'},
+                {data: 'price', name: 'price', searchable: false},
+                {data: 'description', name: 'description', searchable: false},
+                {data: 'stock', name: 'stock', searchable: false},
+                {data: 'file', name: 'file', searchable: false},
+                {data: 'actions', name: 'actions', orderable: false, searchable: false}
+            ]
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', async function() {
+        const token = localStorage.getItem('token');
+
+        try {
+            const response = await fetch('http://127.0.0.1:8000/api/products-api', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json'
+                }
             });
-        @elseif(session('error'))
-            Swal.fire({
-                icon: "error",
-                title: "GAGAL!",
-                text: "{{ session('error') }}",
-                showConfirmButton: false,
-                timer: 2000
-            });
-        @endif
 
-            
-    </script>
+            const roleData = await response.json();
+            const role = roleData.role;
+            console.log(role);
 
-    <script>
+            if (role === 'admin') {
+                document.getElementById('roleActions').innerHTML = `
+                    <a href="{{ route('products.create') }}" class="btn btn-md btn-success mb-3">ADD PRODUCT</a>
+                `;
+            }
 
-        $(document).ready(function() {
-            $('#productsTable').DataTable({
-                processing:true,
-                serverside:true,
-                ajax: '{{ route ('products.data') }}',
-                columns: [
-                    {data: 'image', name: 'image', orderable: false},
-                    {data: 'title', name: 'title'},
-                    {data: 'price', name: 'price', searchable: false},
-                    {data: 'description', name: 'description', searchable: false},
-                    {data: 'stock', name: 'stock', searchable: false},
-                    {data: 'file', name: 'file', searchable: false},
-                    {data: 'actions', name: 'actionse', orderable: false, searchable: false}
-                ]
-            })
-        })
-    </script>
+        } catch (error) {
+            console.error('Failed to fetch products:', error);
+        }
+    });
+</script>
+
 
 
 @endpush

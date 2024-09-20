@@ -6,6 +6,9 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Log;
+
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class CheckRole
 {
@@ -17,10 +20,24 @@ class CheckRole
     public function handle(Request $request, Closure $next): Response
     {
 
-        $user = Auth::user();
+        //ga make api
+        // $user = Auth::user();
+        
+        // if (!$user) {
+        //     return redirect()->route('/');
+        // }
 
+        //make api
+        // $user = auth()->guard('api')->user();
+        // $user = JWTAuth::parseToken()->authenticate();
+        
+        
+        $user = Auth::guard('api')->user();
+
+        Log::info($user);
+        // Jika pengguna tidak ditemukan, kembalikan respons JSON dengan status 401 (Unauthorized)
         if (!$user) {
-            return redirect()->route('/');
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
         }
 
         $route = $request->route()->getName();

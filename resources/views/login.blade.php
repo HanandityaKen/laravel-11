@@ -10,7 +10,7 @@
   <div class="container d-flex justify-content-center align-items-center vh-100">
     <div class="card p-4" style="width: 22rem;">
       <h3 class="text-center mb-4">Login</h3>
-      <form action="{{ route('loginproses')}}" method="POST">
+      <form method="POST" id="loginForm">
         @csrf
         <div class="mb-3">
           <label for="email" class="form-label">Email address</label>
@@ -37,5 +37,74 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  {{-- <script>
+    document.getElementById('loginForm').addEventListener('submit', async function(event) {
+        event.preventDefault();
+
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+
+        try {
+            const response = await fetch('http://127.0.0.1:8000/api/loginapi', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    
+                },
+                body: JSON.stringify({ email, password }),
+            });
+
+            const data = await response.json();
+            console.log(data)
+
+            if (data.success) {
+                console.log('Redirecting to:', data.redirect);
+                localStorage.setItem('token', data.token);
+                window.location.href = data.redirect;
+            } else {
+                console.error(data.message);
+            }
+        } catch (error) {
+            console.error('Login failed:', error);
+        }
+    });
+</script> --}}
+
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async function(event) {
+        event.preventDefault();
+
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+
+        try {
+            const response = await fetch('http://127.0.0.1:8000/api/loginapi', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json', 
+                },
+                body: JSON.stringify({ email, password }),
+            });
+
+            const data = await response.json();
+            console.log('Response Data:', data);
+
+            if (response.ok) {
+                localStorage.setItem('token', data.token);
+
+                sessionStorage.setItem('email', data.user.email);
+
+                window.location.href = "{{ route('products.index') }}";
+            } else {
+                console.error('Error:', data.message);
+            }
+        } catch (error) {
+            console.error('Login failed:', error);
+        }
+    });
+  </script>
+
 </body>
 </html>
