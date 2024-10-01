@@ -92,9 +92,11 @@
             console.log('Response Data:', data);
 
             if (response.ok) {
-                localStorage.setItem('token', data.token);
-
+                localStorage.setItem('access_token', data.access_token);
+                localStorage.setItem('refresh_token', data.refresh_token);
+                
                 sessionStorage.setItem('email', data.user.email);
+                sessionStorage.setItem('role', data.user.role);
 
                 window.location.href = "{{ route('products.index') }}";
             } else {

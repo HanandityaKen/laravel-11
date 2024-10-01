@@ -35,111 +35,109 @@ class ProductController extends Controller
         return view('products.create');
     }
 
-    public function store(Request $request): RedirectResponse
-    {
-        $request->validate([
-            'images'        => 'required|image|mimes:jpeg,jpg,png,img|max:2048',
-            'title'         => 'required|min:5',
-            'description'   => 'required|min:10',
-            'price'         => 'required|numeric',
-            'stock'         => 'required|numeric',
-            'file'          => 'required|mimes:pdf|max:5120',
-        ]);
-
-        $images = $request->file('images');
-        $images->storeAs('public/products', $images->hashName());
-
-        $file = $request->file('file');
-        $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension(); // UUID dengan ekstensi file
-        $file->storeAs('public/products/file', $fileName);
-
-        Product::create([
-            'images'            => $images->hashName(),
-            'title'             => $request->title,
-            'description'       => $request->description,
-            'price'             => $request->price,
-            'stock'             => $request->stock,
-            'file'              => $fileName,
-        ]);
-
-        return redirect()->route('products.index')->with(['success' => 'Data Berhasil Disimpan!']);
-    }
-
+    
     public function show(string $id): View
-    {
-        $product = Product::findOrFail($id);
-
-        return view('products.show', compact('product'));
+    {   
+        return view('products.show');
     }
-
+    
     public function edit(string $id): View
     {
-
-        $product = Product::findOrFail($id);
-
-        return view('products.edit', compact('product'));
+        // $product = Product::findOrFail($id);
+        
+        return view('products.edit');
     }
+    
+    // public function store(Request $request): RedirectResponse
+    // {
+    //     $request->validate([
+    //         'images'        => 'required|image|mimes:jpeg,jpg,png,img|max:2048',
+    //         'title'         => 'required|min:5',
+    //         'description'   => 'required|min:10',
+    //         'price'         => 'required|numeric',
+    //         'stock'         => 'required|numeric',
+    //         'file'          => 'required|mimes:pdf|max:5120',
+    //     ]);
 
-    public function update(Request $request, $id): RedirectResponse
-    {
+    //     $images = $request->file('images');
+    //     $images->storeAs('public/products', $images->hashName());
 
-        $request->validate([
-            'images'        => 'image|mimes:jpeg,jpg,png,img|max:2048',
-            'title'         => 'required|min:5',
-            'description'   => 'required|min:10',
-            'price'         => 'required|numeric',
-            'stock'         => 'required|numeric',
-            'file'          => 'mimes:pdf|max:5120',
-        ]);
+    //     $file = $request->file('file');
+    //     $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension(); // UUID dengan ekstensi file
+    //     $file->storeAs('public/products/file', $fileName);
 
-        $product = Product::findOrFail($id);
+    //     Product::create([
+    //         'images'            => $images->hashName(),
+    //         'title'             => $request->title,
+    //         'description'       => $request->description,
+    //         'price'             => $request->price,
+    //         'stock'             => $request->stock,
+    //         'file'              => $fileName,
+    //     ]);
 
-        if ($request->file('images')) {
-            // delete
-            Storage::delete('public/products/'.$product->images);
+    //     return redirect()->route('products.index')->with(['success' => 'Data Berhasil Disimpan!']);
+    // }
 
-            $images = $request->file('images');
-            $images->storeAs('/public/products', $images->hashName());
+    // public function update(Request $request, $id): RedirectResponse
+    // {
 
-            $product->images = $images->hashName();
+    //     $request->validate([
+    //         'images'        => 'image|mimes:jpeg,jpg,png,img|max:2048',
+    //         'title'         => 'required|min:5',
+    //         'description'   => 'required|min:10',
+    //         'price'         => 'required|numeric',
+    //         'stock'         => 'required|numeric',
+    //         'file'          => 'mimes:pdf|max:5120',
+    //     ]);
 
-        }
+    //     $product = Product::findOrFail($id);
 
-        if ($request->file('file')) {
-            Storage::delete('public/products/file/'.$product->file);
+    //     if ($request->file('images')) {
+    //         // delete
+    //         Storage::delete('public/products/'.$product->images);
 
-            $file = $request->file('file');
-            $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension(); // UUID dengan ekstensi file
-            $file->storeAs('public/products/file', $fileName);
+    //         $images = $request->file('images');
+    //         $images->storeAs('/public/products', $images->hashName());
 
-            $product->file = $fileName;
+    //         $product->images = $images->hashName();
 
-        }
+    //     }
 
-        $product->update([
-            'title'                 => $request->title,
-            'description'           => $request->description,
-            'price'                 => $request->price,
-            'stock'                 => $request->stock,
-        ]);
+    //     if ($request->file('file')) {
+    //         Storage::delete('public/products/file/'.$product->file);
 
-        return redirect()->route('products.index')->with(['success' => 'Data Berhasil DIubah!']);
+    //         $file = $request->file('file');
+    //         $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension(); // UUID dengan ekstensi file
+    //         $file->storeAs('public/products/file', $fileName);
 
-    }
+    //         $product->file = $fileName;
 
-    public function destroy($id): RedirectResponse
-    {
+    //     }
 
-        $product = Product::findOrFail($id);
+    //     $product->update([
+    //         'title'                 => $request->title,
+    //         'description'           => $request->description,
+    //         'price'                 => $request->price,
+    //         'stock'                 => $request->stock,
+    //     ]);
 
-        Storage::delete('public/products/'. $product->images);
+    //     return redirect()->route('products.index')->with(['success' => 'Data Berhasil DIubah!']);
 
-        Storage::delete('public/products/file'. $product->file);
+    // }
 
-        $product->delete();
+    // public function destroy($id): RedirectResponse
+    // {
 
-        return redirect()->route('products.index')->with(['success' => 'Data Berhasil Dihapus!']);
-    }
+    //     $product = Product::findOrFail($id);
+
+    //     Storage::delete('public/products/'. $product->images);
+
+    //     Storage::delete('public/products/file'. $product->file);
+
+    //     $product->delete();
+
+    //     return redirect()->route('products.index')->with(['success' => 'Data Berhasil Dihapus!']);
+    // }
 
     // public function getProductsData()
     // {

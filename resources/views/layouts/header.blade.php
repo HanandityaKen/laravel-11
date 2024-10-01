@@ -36,7 +36,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     document.getElementById('logoutButton').addEventListener('click', async function() {
-      const token = localStorage.getItem('token');
+      const accessToken = localStorage.getItem('access_token');
       // const email = sessionStorage.getItem('email');
 
       // console.log(token)
@@ -46,13 +46,13 @@
           const response = await fetch('http://127.0.0.1:8000/api/logout-api', {
               method: 'POST',
               headers: {
-                  'Authorization': `Bearer ${token}`,
+                  'Authorization': `Bearer ${accessToken}`,
                   'Accept': 'application/json'
               }
           });
 
           if (response.ok) {
-              localStorage.removeItem('token');
+              localStorage.removeItem('access_token');
               sessionStorage.removeItem('email');
               window.location.href = "{{ route('login') }}"; // Ganti dengan rute login yang sesuai
           } else {

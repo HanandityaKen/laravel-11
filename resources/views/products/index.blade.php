@@ -81,20 +81,6 @@
 @push('scripts')
 
 <script>
-    // Fungsi untuk memeriksa apakah pengguna sudah login
-    // function checkLogin() {
-    //     const token = localStorage.getItem('token');
-    //     const email = sessionStorage.getItem('email');
-
-    //     console.log(token)
-    //     console.log(email)
-
-    //     if (!token || !email) {
-    //         window.location.href = "{{ route('login') }}"; // Ganti dengan rute login yang sesuai
-    //     }
-    // }
-
-    // checkLogin();
 
     // SweetAlert message
     @if(session('success'))
@@ -116,8 +102,7 @@
     @endif
 
     $(document).ready(function() {
-        const token = localStorage.getItem('token');
-        console.log(token);
+        const access_token = localStorage.getItem('access_token');
 
         $('#productsTable').DataTable({
             processing: true,
@@ -126,30 +111,88 @@
                 url: '{{ route('products.data.api') }}',
                 type: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${access_token}`,
                     'Accept': 'application/json'
                 }
             },
             columns: [
                 {data: 'image', name: 'image', orderable: false},
                 {data: 'title', name: 'title'},
-                {data: 'price', name: 'price', searchable: false},
-                {data: 'description', name: 'description', searchable: false},
-                {data: 'stock', name: 'stock', searchable: false},
-                {data: 'file', name: 'file', searchable: false},
+                {data: 'price', name: 'price', orderable: false, searchable: false},
+                {data: 'description', name: 'description', orderable: false, searchable: false},
+                {data: 'stock', name: 'stock', orderable: false, searchable: false},
+                {data: 'file', name: 'file', orderable: false, searchable: false},
                 {data: 'actions', name: 'actions', orderable: false, searchable: false}
             ]
         });
     });
 
+    $('#productsTable').on('click', '.delete-product', async function() {
+
+        const id = $(this).data('id'); 
+        const access_token = localStorage.getItem('access_token'); 
+
+
+        if (confirm('Apakah Anda yakin ingin menghapus produk ini?')) {
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/api/products-delete/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${access_token}`,
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    window.location.href = "{{ route ('products.index') }}"
+                    alert('Produk berhasil dihapus!');
+                } else {
+                    alert('Gagal menghapus produk.');
+                }
+            } catch (error) {
+                console.error('Kesalahan:', error);
+                alert('Terjadi kesalahan saat menghapus produk.');
+            }
+        }
+    });
+
+    // $('#productsTable').on('click', '.show-product', async function() {
+    //     const id = $(this).data('id'); 
+    //     const token = localStorage.getItem('token')
+
+    //     window.location.href = `http://127.0.0.1:8000/products-show/${id}`
+
+    //     try {
+    //         const response = await fetch(`http://127.0.0.1:8000/api/products-data-show-api/${id}`, {
+    //             method: 'GET',
+    //             header: {
+    //                 'Authorization': `Bearer ${token}`,
+    //                 'Accept': 'application/json'
+    //             },
+    //         })
+
+    //         const data = await response.json();
+    //         console.log(data)
+
+    //         if (response.ok) {
+    //             window.location.href = `http://127.0.0.1:8000/products/${id}`
+    //         } else {
+    //             console.error('Kesalahan:', error);;
+    //         }
+    //     } catch (error) {
+    //         console.error('Kesalahan:', error);
+    //     }
+
+    // })
+
     document.addEventListener('DOMContentLoaded', async function() {
-        const token = localStorage.getItem('token');
+        const access_token = localStorage.getItem('access_token');
 
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/products-api', {
+            const response = await fetch('http://127.0.0.1:8000/api/products-role-api', {
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${access_token}`,
                     'Accept': 'application/json'
                 }
             });

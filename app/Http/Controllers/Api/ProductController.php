@@ -7,6 +7,9 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Yajra\DataTables\Facades\DataTables;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class ProductController extends Controller
 {
@@ -17,7 +20,6 @@ class ProductController extends Controller
 
         if (!$user) {
             return response()->json([
-                'success' => false,
                 'message' => 'User not found'
             ], 401);
         }
@@ -25,10 +27,35 @@ class ProductController extends Controller
         $role = $user->role;
 
         return response()->json([
-            'success' => true,
             'role' => $role
         ], 200);
 
+    }
+
+    // public function getDataShow(Request $request, $id)
+    // {
+    //     $product = Product::findOrFail($id);
+
+    //     return response()->json([
+    //         'message'   => 'Data dikirim',
+    //         'products' => [
+    //             'images' => $product->images,
+    //             'title' => $product->title,
+    //             'description' => $product->description,
+    //             'stock' => $product->stock,
+    //             'price' => $product->price,
+    //         ],
+    //     ], 200);
+    // }
+
+    public function getData(Request $request, $id)
+    {
+        $product = Product::findOrFail($id);
+
+        return response()->json([
+            'message' => 'Data dikirim',
+            'products' => $product,
+        ], 200);
     }
 
     public function getProductsData()
@@ -52,17 +79,119 @@ class ProductController extends Controller
                 if ($role === 'admin') {
                     return '<a href="' . route('products.show', $row->id) . '" class="btn btn-sm btn-dark">Show</a>
                     <a href="' . route('products.edit', $row->id) . '" class="btn btn-warning btn-sm">Edit</a>
-                    <form action="' . route('products.destroy', $row->id) . '" method="POST" style="display:inline;">
-                        ' . csrf_field() . method_field('DELETE') . '
-                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                    </form>';
+                    <button type="submit" class="btn btn-danger btn-sm delete-product" data-id="' . $row->id .'">Delete</button>';
                 }
-
                 return '<a href="' . route('products.show', $row->id) . '" class="btn btn-sm btn-dark">Show</a>';
-                // <a href="{{ route('products.show', $product->id) }}" class="btn btn-sm btn-dark">SHOW</a>
             })
             ->rawColumns(['image','description','actions'])
             ->make(true);
 
     }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'images'        => 'required|image|mimes:jpeg,jpg,png|max:2048',
+            'title'         => 'required|min:5',
+            'description'   => 'required|min:10',
+            'price'         => 'required|numeric',
+            'stock'         => 'required|numeric',
+            'file'          => 'required|mimes:pdf|max:5120',
+        ]);
+        try {
+            
+            $images = $request->file('images');
+            $images->storeAs('public/products', $images->hashName());
+    
+            $file = $request->file('file');
+            $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension(); // UUID dengan ekstensi file
+            $file->storeAs('public/products/file', $fileName);
+    
+            $product = Product::create([
+                'images'            => $images->hashName(),
+                'title'             => $request->title,
+                'description'       => $request->description,
+                'price'             => $request->price,
+                'stock'             => $request->stock,
+                'file'              => $fileName,
+            ]);
+    
+            return response()->json([
+                'message' => 'Data Berhasil Disimpan!',
+                'data' => $product,
+            ], 201); // HTTP status 201 Created
+    
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Data Gagal Disimpan!',
+            ], 500);
+        }
+    }
+
+    public function update (Request $request, $id)
+    {
+        // Log::info('Updating product', $request->all());
+        Log::info('Updating product', ['id' => $id, 'request_data' => $request->all()]);
+
+        $request->validate([
+            'images'        => 'image|mimes:jpeg,jpg,png,img|max:2048',
+            'title'         => 'required|min:5',
+            'description'   => 'required|min:10',
+            'price'         => 'required|numeric',
+            'stock'         => 'required|numeric',
+            'file'          => 'mimes:pdf|max:5120',
+        ]);
+
+        $product = Product::findOrFail($id);
+
+        if ($request->file('images')) {
+            // delete
+            Storage::delete('public/products/'.$product->images);
+
+            $images = $request->file('images');
+            $images->storeAs('/public/products', $images->hashName());
+
+            $product->images = $images->hashName();
+
+        }
+
+        if ($request->file('file')) {
+            Storage::delete('public/products/file/'.$product->file);
+
+            $file = $request->file('file');
+            $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension(); // UUID dengan ekstensi file
+            $file->storeAs('public/products/file', $fileName);
+
+            $product->file = $fileName;
+
+        }
+
+        $product->update([
+            'title'                 => $request->title,
+            'description'           => $request->description,
+            'price'                 => $request->price,
+            'stock'                 => $request->stock,
+        ]);
+
+        return response()->json([
+            'message'   => 'Data berhasil diperbarui',
+            'data'      => $product,      
+        ], 200);
+    }
+
+    public function destroy($id)
+    {
+        $product =  Product::findOrFail($id);
+
+        Storage::delete('public/products/'. $product->images);
+        Storage::delete('public/products/file'. $product->file);
+
+        $product->delete();
+
+        return response()->json([
+            'message'   => 'Data berhasil dihapus'
+        ], 200);
+    }
 }
+
+
