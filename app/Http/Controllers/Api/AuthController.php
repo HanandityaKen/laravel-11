@@ -26,8 +26,9 @@ class AuthController extends Controller
 
         // Menambahkan type ke payload saat membuat refresh token
         // $refreshToken = JWTAuth::fromUser($user, ['type' => 'refresh_token']);
-        // $refreshToken = JWTAuth::fromUser($user); 
-        $refreshToken = JWTAuth::refresh($accessToken);
+        $refreshToken = JWTAuth::fromUser($user); 
+
+        // $refreshToken = JWTAuth::refresh($accessToken);
 
         return response()->json([
             'user' => [
@@ -115,11 +116,14 @@ class AuthController extends Controller
         }
 
         try {
-            $newAccessToken = JWTAuth::parseToken()->refresh();
+            // $newAccessToken = JWTAuth::parseToken()->refresh();
+            
+            // Menggunakan JWTAuth::setToken() untuk memproses refresh token
+            $newAccessToken = JWTAuth::setToken($refreshToken)->refresh();
 
             return response()->json([
                 'access_token' => $newAccessToken,
-                'message' => 'acces token digenerate'
+                'message' => 'Access token generated successfully'
             ], 200);
         } catch (TokenExpiredException $e) {
             return response()->json([
