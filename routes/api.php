@@ -5,9 +5,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\CheckRole;
 
 Route::post('/loginapi', [\App\Http\Controllers\Api\AuthController::class, 'login'])->name('loginprosesapi');
+Route::post('/refresh-token-api', [\App\Http\Controllers\Api\AuthController::class, 'refreshToken'])->name('refresh.token.api');
 
-Route::middleware(['auth:api'])->group(function () {
-  Route::post('/refresh-token-api', [\App\Http\Controllers\Api\AuthController::class, 'refreshToken'])->name('refresh.token.api');
+Route::middleware(['checkToken'])->group(function () {
   Route::get('/products-role-api', [\App\Http\Controllers\Api\ProductController::class, 'role'])->name('products.role.api');
   // Route::get('/products-data-show-api/{id}', [\App\Http\Controllers\Api\ProductController::class, 'getDataShow'])->name('products.datashow.api');
   Route::get('/products-data-show-api/{id}', [\App\Http\Controllers\Api\ProductController::class, 'getData'])->name('products.datashow.api');

@@ -102,7 +102,7 @@
     @endif
 
     $(document).ready(function() {
-        const access_token = localStorage.getItem('access_token');
+        const token = localStorage.getItem('token');
 
         $('#productsTable').DataTable({
             processing: true,
@@ -111,7 +111,7 @@
                 url: '{{ route('products.data.api') }}',
                 type: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${access_token}`,
+                    'Authorization': `Bearer ${token}`,
                     'Accept': 'application/json'
                 }
             },
@@ -130,7 +130,7 @@
     $('#productsTable').on('click', '.delete-product', async function() {
 
         const id = $(this).data('id'); 
-        const access_token = localStorage.getItem('access_token'); 
+        const token = localStorage.getItem('token'); 
 
 
         if (confirm('Apakah Anda yakin ingin menghapus produk ini?')) {
@@ -138,14 +138,16 @@
                 const response = await fetch(`http://127.0.0.1:8000/api/products-delete/${id}`, {
                     method: 'DELETE',
                     headers: {
-                        'Authorization': `Bearer ${access_token}`,
+                        'Authorization': `Bearer ${token}`,
                         'Accept': 'application/json'
                     }
                 });
 
-                if (response.ok) {
+                if (response.status === 200) {
                     window.location.href = "{{ route ('products.index') }}"
                     alert('Produk berhasil dihapus!');
+                } else if (response.status === 401) {
+                    refreshToken()
                 } else {
                     alert('Gagal menghapus produk.');
                 }
@@ -186,13 +188,13 @@
     // })
 
     document.addEventListener('DOMContentLoaded', async function() {
-        const access_token = localStorage.getItem('access_token');
+        const token = localStorage.getItem('token');
 
         try {
             const response = await fetch('http://127.0.0.1:8000/api/products-role-api', {
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${access_token}`,
+                    'Authorization': `Bearer ${token}`,
                     'Accept': 'application/json'
                 }
             });
@@ -205,6 +207,9 @@
                 document.getElementById('roleActions').innerHTML = `
                     <a href="{{ route('products.create') }}" class="btn btn-md btn-success mb-3">ADD PRODUCT</a>
                 `;
+            } else if (response.status === 401) {
+                refreshToken()
+                window.location.reload()
             }
 
         } catch (error) {

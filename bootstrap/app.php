@@ -4,6 +4,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\CheckRole;
+use App\Http\Middleware\CheckToken;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -16,6 +17,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // $middleware->append(CheckRole::class);
         $middleware->alias([
             'checkRole' => CheckRole::class
+        ]);
+
+        $middleware->alias([
+            'checkToken' => CheckToken::class
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

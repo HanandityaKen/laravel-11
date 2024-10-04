@@ -109,35 +109,71 @@
         </div>
     </div>
 
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.ckeditor.com/4.13.1/standard/ckeditor.js"></script>
     <script>
         CKEDITOR.replace( 'description' );
     </script>
     <script>
+        async function refreshToken() {
+            const token = localStorage.getItem('token');
+
+            if (!token) {
+                console.log('Token not found');
+            }
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/api/refresh-token-api', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                });
+                const data = await response.json();
+                console.log(data)
+
+                if (response.ok) {
+                    localStorage.setItem('token', data.token);
+                    return data.token;
+                } else {
+                    window.location.href = "{{ route('login') }}";
+                }
+            } catch (error) {
+                console.error('Token refresh failed:', error);
+                window.location.href = "{{ route('login') }}";
+            }
+        }
+
+
+
         document.addEventListener('DOMContentLoaded', async function () {
             const id = {{ request()->route('id')}}
-            const access_token = localStorage.getItem('access_token')
+            const token = localStorage.getItem('token')
             console.log(id)
-            console.log(access_token)
+            console.log(token)
 
             try {
                 const response = await fetch(`http://127.0.0.1:8000/api/products-data-show-api/${id}`, {
                     method: 'GET',
                     headers: {
-                        'Authorization': `Bearer ${access_token}`,
+                        'Authorization': `Bearer ${token}`,
                         'Accept': 'application/json'
                     },
                 })
 
                 const data = await response.json()
 
-                if (response.ok) {
+                if (response.status === 200) {
                     document.getElementById('product-title').value = data.products.title;
                     // document.getElementById('product-description').value = data.products.description;
                     CKEDITOR.instances['product-description'].setData(data.products.description);
                     document.getElementById('product-price').value = data.products.price;
                     document.getElementById('product-stock').value = data.products.stock;
+                } else if (response.status === 401) {
+                    refreshToken()
+                    window.location.reload()
                 }
 
             } catch (error) {
@@ -159,7 +195,7 @@
             //     console.log(key, value);
             // });
             const id = {{ request()->route('id') }};
-            const access_token = localStorage.getItem('access_token');
+            const token = localStorage.getItem('token');
 
             console.log('Title:', formData.get('title'));
             console.log('Description:', formData.get('description'));
@@ -172,14 +208,17 @@
                 const response = await fetch (`http://127.0.0.1:8000/api/products-update/${id}`, {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${access_token}`,
+                        'Authorization': `Bearer ${token}`,
                         'Accept': 'application/json'
                     },
                     body: formData,
                 });
 
-                if (response.ok) {
+                if (response.status === 200) {
                     window.location.href = "{{ route ('products.index') }}"
+                } else if (response.status === 401) {
+                    refreshToken()
+                    window.location.reload()
                 } else {
                     alert(data.message)
                 }

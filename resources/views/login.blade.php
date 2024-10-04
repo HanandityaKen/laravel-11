@@ -92,8 +92,7 @@
             console.log('Response Data:', data);
 
             if (response.ok) {
-                localStorage.setItem('access_token', data.access_token);
-                localStorage.setItem('refresh_token', data.refresh_token);
+                localStorage.setItem('token', data.token);
                 
                 sessionStorage.setItem('email', data.user.email);
                 sessionStorage.setItem('role', data.user.role);

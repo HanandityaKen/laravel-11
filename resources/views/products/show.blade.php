@@ -38,17 +38,47 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        async function refreshToken() {
+            const token = localStorage.getItem('token');
+
+            if (!token) {
+                console.log('Token not found');
+            }
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/api/refresh-token-api', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                });
+                const data = await response.json();
+                console.log(data)
+
+                if (response.ok) {
+                    localStorage.setItem('token', data.token);
+                    return data.token;
+                } else {
+                    window.location.href = "{{ route('login') }}";
+                }
+            } catch (error) {
+                console.error('Token refresh failed:', error);
+                window.location.href = "{{ route('login') }}";
+            }
+        }
+
+
+
         document.addEventListener('DOMContentLoaded', async function() {
             const id = {{ request()->route('id') }};
-            const access_token = localStorage.getItem('access_token');
-            // console.log(id)
-            // console.log(token)
+            const token = localStorage.getItem('token');
 
             try {
                 const response = await fetch(`http://127.0.0.1:8000/api/products-data-show-api/${id}`, {
                     method: 'GET',
                     headers: {
-                        'Authorization': `Bearer ${access_token}`,
+                        'Authorization': `Bearer ${token}`,
                         'Accept': 'application/json'
                     },
                 })
@@ -56,7 +86,7 @@
                 const data = await response.json();
                 console.log(data);
 
-                if (response.ok) {
+                if (response.status === 200) {
                     const imageUrl = `{{ asset('/storage/products/') }}/${data.products.images}`;
 
                     document.getElementById('product-images').src = imageUrl;
@@ -69,9 +99,12 @@
                     }).format(data.products.price);
 
                     document.getElementById('product-price').textContent = `Price: ${priceInRupiah}`;
-                    } else {
-                        console.error('Kesalahan:', error);;
-                    }
+                } else if (response.status === 401) {
+                    refreshToken()
+                    window.location.reload()
+                } else {
+                    console.error('Kesalahan:', error);;
+                }
             } catch (error) {
                 console.error('Kesalahan:', error);
             }

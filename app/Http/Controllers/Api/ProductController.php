@@ -61,9 +61,9 @@ class ProductController extends Controller
     public function getProductsData()
     {
         // kalo milih2
-        // $products = Product::select('id', 'title', 'description', 'price', 'stock', 'file')->get();
+        $products = Product::select('id', 'title', 'description', 'price', 'stock', 'file')->get();
 
-        //kalo butuh semua data tanpa milih
+        // kalo butuh semua data tanpa milih
         $products = Product::all();
 
         $role = Auth::guard('api')->user()->role;
@@ -85,6 +85,31 @@ class ProductController extends Controller
             })
             ->rawColumns(['image','description','actions'])
             ->make(true);
+
+        // $products = Product::all();
+
+        // $role = Auth::guard('api')->user()->role;
+
+        // return response()->json([
+        //     'message' => 'Data fetched successfully',
+        //     'data' => DataTables::of($products)
+        //         ->addColumn('image', function($row) {
+        //             return '<img src="' . asset('storage/products/' . $row->images) . '" style="width: 100px; height: auto;">';
+        //         })
+        //         ->addColumn('description', function($row) {
+        //             return $row->description; 
+        //         })
+        //         ->addColumn('actions', function($row) use($role) {
+        //             if ($role === 'admin') {
+        //                 return '<a href="' . route('products.show', $row->id) . '" class="btn btn-sm btn-dark">Show</a>
+        //                 <a href="' . route('products.edit', $row->id) . '" class="btn btn-warning btn-sm">Edit</a>
+        //                 <button type="submit" class="btn btn-danger btn-sm delete-product" data-id="' . $row->id .'">Delete</button>';
+        //             }
+        //             return '<a href="' . route('products.show', $row->id) . '" class="btn btn-sm btn-dark">Show</a>';
+        //         })
+        //         ->rawColumns(['image', 'description', 'actions'])
+        //         ->make(true)->getData()
+        // ], 200);
 
     }
 

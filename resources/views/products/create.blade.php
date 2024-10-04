@@ -109,24 +109,41 @@
         CKEDITOR.replace( 'description' );
     </script>
     <script>
+        async function refreshToken() {
+            const token = localStorage.getItem('token');
 
-        function checkRole() {
-            const access_token = localStorage.getItem('access_token')
-            const email  = sessionStorage.getItem('email')
-            const role  = sessionStorage.getItem('role')
+            if (!token) {
+                console.log('Token not found');
+            }
 
-            if (role !== 'admin' || !access_token || !email) {
-                window.location.href = "{{ route ('products.index') }}"
+            try {
+                const response = await fetch('http://127.0.0.1:8000/api/refresh-token-api', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                });
+                const data = await response.json();
+                console.log(data)
+
+                if (response.ok) {
+                    localStorage.setItem('token', data.token);
+                    return data.token;
+                } else {
+                    window.location.href = "{{ route('login') }}";
+                }
+            } catch (error) {
+                console.error('Token refresh failed:', error);
+                window.location.href = "{{ route('login') }}";
             }
         }
-
-        checkRole()
 
         document.getElementById('createForm').addEventListener('submit', async function(event) {
             event.preventDefault();
 
-            const access_token = localStorage.getItem('access_token');
-            // console.log(access_token)
+            const token = localStorage.getItem('token');
+            // console.log(token)
 
             const images = document.getElementById('images').files[0];
             const title = document.getElementById('title').value;
@@ -154,14 +171,17 @@
                 const response = await fetch('http://127.0.0.1:8000/api/products-store-api', {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${access_token}`,
+                        'Authorization': `Bearer ${token}`,
                         'Accept': 'application/json'
                     },
                     body: formData,
                 })
 
-                if (response.ok) {
+                if (response.status === 200) {
                     window.location.href = "{{ route('products.index') }}"
+                } else if {
+                    refreshToken()
+                    window.location.reload()
                 } else {
                     alert(data.message);
                 }
