@@ -70,7 +70,7 @@
 
 
 
-        document.addEventListener('DOMContentLoaded', async function() {
+        async function getData() {
             const id = {{ request()->route('id') }};
             const token = localStorage.getItem('token');
 
@@ -82,6 +82,10 @@
                         'Accept': 'application/json'
                     },
                 })
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
 
                 const data = await response.json();
                 console.log(data);
@@ -99,16 +103,20 @@
                     }).format(data.products.price);
 
                     document.getElementById('product-price').textContent = `Price: ${priceInRupiah}`;
-                } else if (response.status === 401) {
-                    refreshToken()
-                    window.location.reload()
-                } else {
+                }else {
                     console.error('Kesalahan:', error);;
                 }
             } catch (error) {
-                console.error('Kesalahan:', error);
+                if (error.message.includes('401')) {
+                    await refreshToken()
+
+                    getData()
+                }
             }
-        })
+        }
+
+        document.addEventListener('DOMContentLoaded', getData)
+
     </script>
 </body>
 </html>

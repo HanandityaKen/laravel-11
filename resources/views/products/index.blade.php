@@ -102,29 +102,46 @@
     @endif
 
     $(document).ready(function() {
-        const token = localStorage.getItem('token');
 
-        $('#productsTable').DataTable({
-            processing: true,
-            serverSide: true,
-            ajax: {
-                url: '{{ route('products.data.api') }}',
-                type: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Accept': 'application/json'
-                }
-            },
-            columns: [
-                {data: 'image', name: 'image', orderable: false},
-                {data: 'title', name: 'title'},
-                {data: 'price', name: 'price', orderable: false, searchable: false},
-                {data: 'description', name: 'description', orderable: false, searchable: false},
-                {data: 'stock', name: 'stock', orderable: false, searchable: false},
-                {data: 'file', name: 'file', orderable: false, searchable: false},
-                {data: 'actions', name: 'actions', orderable: false, searchable: false}
-            ]
-        });
+        function loadDatatable() {
+
+            const token = localStorage.getItem('token');
+    
+            $('#productsTable').DataTable({
+                processing: true,
+                serverSide: true,
+                destroy: true,
+                ajax: {
+                    url: '{{ route('products.data.api') }}',
+                    type: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json'
+                    },
+                    error: async function(xhr, status, error) {
+                        if (xhr.status === 401) {
+                            await refreshToken()
+
+                            loadDatatable(); 
+                        } else {
+                            console.error('Error fetching data:', error);
+                        }
+                    }
+                },
+                columns: [
+                    {data: 'image', name: 'image', orderable: false},
+                    {data: 'title', name: 'title'},
+                    {data: 'price', name: 'price', orderable: false, searchable: false},
+                    {data: 'description', name: 'description', orderable: false, searchable: false},
+                    {data: 'stock', name: 'stock', orderable: false, searchable: false},
+                    {data: 'file', name: 'file', orderable: false, searchable: false},
+                    {data: 'actions', name: 'actions', orderable: false, searchable: false}
+                ]
+            });
+        }
+
+        loadDatatable()
+
     });
 
     $('#productsTable').on('click', '.delete-product', async function() {
@@ -146,14 +163,11 @@
                 if (response.status === 200) {
                     window.location.href = "{{ route ('products.index') }}"
                     alert('Produk berhasil dihapus!');
-                } else if (response.status === 401) {
-                    refreshToken()
                 } else {
                     alert('Gagal menghapus produk.');
                 }
             } catch (error) {
                 console.error('Kesalahan:', error);
-                alert('Terjadi kesalahan saat menghapus produk.');
             }
         }
     });
@@ -187,8 +201,9 @@
 
     // })
 
-    document.addEventListener('DOMContentLoaded', async function() {
+    async function getRole() {
         const token = localStorage.getItem('token');
+        console.log(token)
 
         try {
             const response = await fetch('http://127.0.0.1:8000/api/products-role-api', {
@@ -199,6 +214,10 @@
                 }
             });
 
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
             const roleData = await response.json();
             const role = roleData.role;
             console.log(role);
@@ -207,15 +226,18 @@
                 document.getElementById('roleActions').innerHTML = `
                     <a href="{{ route('products.create') }}" class="btn btn-md btn-success mb-3">ADD PRODUCT</a>
                 `;
-            } else if (response.status === 401) {
-                refreshToken()
-                window.location.reload()
             }
 
         } catch (error) {
-            console.error('Failed to fetch products:', error);
+            if (error.message.includes('401')) {
+                await refreshToken()
+                // console.log(error)
+                getRole()
+            }
         }
-    });
+    };
+
+    document.addEventListener('DOMContentLoaded', getRole);
 </script>
 
 

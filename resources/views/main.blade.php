@@ -48,8 +48,8 @@
                     window.location.href = "{{ route('login') }}";
                 }
             } catch (error) {
-                console.error('Token refresh failed:', error);
                 window.location.href = "{{ route('login') }}";
+                // console.error('Token refresh failed:', error);
             }
         }
 

@@ -146,9 +146,7 @@
             }
         }
 
-
-
-        document.addEventListener('DOMContentLoaded', async function () {
+        async function getData () {
             const id = {{ request()->route('id')}}
             const token = localStorage.getItem('token')
             console.log(id)
@@ -163,6 +161,10 @@
                     },
                 })
 
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
                 const data = await response.json()
 
                 if (response.status === 200) {
@@ -171,21 +173,25 @@
                     CKEDITOR.instances['product-description'].setData(data.products.description);
                     document.getElementById('product-price').value = data.products.price;
                     document.getElementById('product-stock').value = data.products.stock;
-                } else if (response.status === 401) {
-                    refreshToken()
-                    window.location.reload()
                 }
 
             } catch (error) {
-                console.error('Kesalahan:', error);
+                if (error.message.includes('401')) {
+                    await refreshToken()
+
+                    getData()
+                    
+                }
             }
 
-        })
+        }
+
+        document.addEventListener('DOMContentLoaded', getData)
 
 
 
 
-        document.getElementById('updateForm').addEventListener('submit', async function (event) {
+        async function updateForm (event) {
             event.preventDefault();
 
             CKEDITOR.instances['product-description'].updateElement();
@@ -216,17 +222,20 @@
 
                 if (response.status === 200) {
                     window.location.href = "{{ route ('products.index') }}"
-                } else if (response.status === 401) {
-                    refreshToken()
-                    window.location.reload()
                 } else {
                     alert(data.message)
                 }
             } catch (error) {
-                console.error('Error:', error);
-                alert('Terjadi kesalahan, silakan coba lagi.');
+                if (error.message.includes('401')) {
+                    await refreshToken()
+
+                    updateForm()
+                    
+                }
             }
-        })
+        }
+
+        document.getElementById('updateForm').addEventListener('submit', updateForm)
 
     </script>
 </body>

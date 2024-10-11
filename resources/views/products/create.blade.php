@@ -139,7 +139,7 @@
             }
         }
 
-        document.getElementById('createForm').addEventListener('submit', async function(event) {
+        async function submitForm(event) {
             event.preventDefault();
 
             const token = localStorage.getItem('token');
@@ -177,21 +177,28 @@
                     body: formData,
                 })
 
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
                 if (response.status === 200) {
                     window.location.href = "{{ route('products.index') }}"
-                } else if {
-                    refreshToken()
-                    window.location.reload()
                 } else {
                     alert(data.message);
                 }
 
 
             } catch (error) {
-                console.error('Error:', error);
-                alert('Terjadi kesalahan, silakan coba lagi.');
+                if (error.message.includes('401')) {
+                    await refreshToken()
+
+                    submitForm()
+
+                }
             }
-        })
+        }
+
+        document.getElementById('createForm').addEventListener('submit', submitForm)
 
 
     </script>
