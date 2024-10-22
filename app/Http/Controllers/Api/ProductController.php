@@ -58,33 +58,61 @@ class ProductController extends Controller
         ], 200);
     }
 
-    public function getProductsData()
+    public function getProductsData(Request $request)
     {
         // kalo milih2
-        $products = Product::select('id', 'title', 'description', 'price', 'stock', 'file')->get();
+        // $products = Product::select('id', 'title', 'description', 'price', 'stock', 'file')->get();
 
         // kalo butuh semua data tanpa milih
-        $products = Product::all();
+        // $products = Product::all();
+
+        $perPage = $request->input('per_page', 10);
+        
+        $products = Product::paginate($perPage);
 
         $role = Auth::guard('api')->user()->role;
 
-        return DataTables::of($products)
-            ->addColumn('image', function($row) {
-                return '<img src="' . asset('storage/products/' . $row->images) . '" style="width: 100px; height: auto;">';
-            })
-            ->addColumn('description', function($row) {
-                return $row->description; // Pastikan HTML dirender dengan benar
-            })
-            ->addColumn('actions', function($row) use($role) {
-                if ($role === 'admin') {
-                    return '<a href="' . route('products.show', $row->id) . '" class="btn btn-sm btn-dark">Show</a>
-                    <a href="' . route('products.edit', $row->id) . '" class="btn btn-warning btn-sm">Edit</a>
-                    <button type="submit" class="btn btn-danger btn-sm delete-product" data-id="' . $row->id .'">Delete</button>';
-                }
-                return '<a href="' . route('products.show', $row->id) . '" class="btn btn-sm btn-dark">Show</a>';
-            })
-            ->rawColumns(['image','description','actions'])
-            ->make(true);
+        return response()->json([
+            'data' => $products->map(function ($product) use ($role) {
+                return [
+                    'id'            => $product->id,
+                    'images'        => '<img src="' . asset('storage/products/' . $product->images) . '" style="width: 100px; height: auto;">',
+                    'title'         => $product->title,
+                    'price'         => 'Rp. ' . number_format($product->price, 2, ',', '.'),
+                    'description'   => $product->description,
+                    'stock'         => $product->stock,
+                    'file'          => $product->file,
+                'actions'           => $this->getActionButtons($product, $role)
+                ];
+            }),
+            'pagination' => [
+                'total'         => $products->total(),
+                'per_page'      => $products->perPage(),
+                'current_page'  => $products->currentPage(),
+                'last_page'     => $products->lastPage(),
+                'next_page_url' => $products->nextPageUrl(),
+                'prev_page_url' => $products->previousPageUrl(),
+            ]
+        ]);
+
+
+        // return DataTables::of($products)
+        //     ->addColumn('image', function($row) {
+        //         return '<img src="' . asset('storage/products/' . $row->images) . '" style="width: 100px; height: auto;">';
+        //     })
+        //     ->addColumn('description', function($row) {
+        //         return $row->description; // Pastikan HTML dirender dengan benar
+        //     })
+        //     ->addColumn('actions', function($row) use($role) {
+        //         if ($role === 'admin') {
+        //             return '<a href="' . route('products.show', $row->id) . '" class="btn btn-sm btn-dark">Show</a>
+        //             <a href="' . route('products.edit', $row->id) . '" class="btn btn-warning btn-sm">Edit</a>
+        //             <button type="submit" class="btn btn-danger btn-sm delete-product" data-id="' . $row->id .'">Delete</button>';
+        //         }
+        //         return '<a href="' . route('products.show', $row->id) . '" class="btn btn-sm btn-dark">Show</a>';
+        //     })
+        //     ->rawColumns(['image','description','actions'])
+        //     ->make(true);
 
         // $products = Product::all();
 
@@ -111,6 +139,18 @@ class ProductController extends Controller
         //         ->make(true)->getData()
         // ], 200);
 
+    }
+
+    private function getActionButtons($product, $role) {
+        if ($role === 'admin') {
+            return '
+                <a href="'. route('products.show', $product->id) .'" class="btn btn-sm btn-dark">Show</a>
+                <a href="'. route('products.edit', $product->id) .'" class="btn btn-warning btn-sm">Edit</a>
+                <button type="submit" class="btn btn-danger btn-sm delete-product" data-id="' . $product->id .'">Delete</button>
+            ';
+        }
+
+        return '<a href="'. route('products.show', $product->id) .'" class="btn btn-sm btn-dark">Show</a>';
     }
 
     public function store(Request $request)
