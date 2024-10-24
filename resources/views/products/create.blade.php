@@ -1,145 +1,123 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Add New Products - SantriKoding.com</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body style="background: lightgray">
+@extends('main')
 
-    <div class="container mt-5 mb-5">
-        <div class="row">
-            <div class="col-md-12">
-                <div class="card border-0 shadow-sm rounded">
-                    <div class="card-body">
-                        <form id="createForm" method="POST" enctype="multipart/form-data">
-                        
-                            @csrf
+@section('title', 'Products')
 
-                            <div class="form-group mb-3">
-                                <label class="font-weight-bold">IMAGE</label>
-                                <input type="file" id="images" class="form-control @error('images') is-invalid @enderror" name="images">
-                            
-                                <!-- error message untuk image -->
-                                @error('images')
-                                    <div class="alert alert-danger mt-2">
-                                        {{ $message }}
-                                    </div>
-                                @enderror
-                            </div>
+@section('content')
+    
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm rounded">
+                <div class="card-body">
+                    <form method="POST" id="createForm" enctype="multipart/form-data">
+                        @csrf
 
-                            <div class="form-group mb-3">
-                                <label class="font-weight-bold">TITLE</label>
-                                <input type="text" id="title" class="form-control @error('title') is-invalid @enderror" name="title" value="{{ old('title') }}" placeholder="Masukkan Judul Product">
-                            
-                                <!-- error message untuk title -->
-                                @error('title')
-                                    <div class="alert alert-danger mt-2">
-                                        {{ $message }}
-                                    </div>
-                                @enderror
-                            </div>
+                        <div class="form-group mb-3">
+                            <label class="font-weight-bold">IMAGE</label>
+                            <input type="file" class="form-control @error('images') is-invalid @enderror" name="images" id="images">
 
-                            <div class="form-group mb-3">
-                                <label class="font-weight-bold">DESCRIPTION</label>
-                                <textarea class="form-control @error('description') is-invalid @enderror" id="description" name="description" rows="5" placeholder="Masukkan Description Product">{{ old('description') }}</textarea>
-                            
-                                <!-- error message untuk description -->
-                                @error('description')
-                                    <div class="alert alert-danger mt-2">
-                                        {{ $message }}
-                                    </div>
-                                @enderror
-                            </div>
+                            @error('images')
+                                <div class="alert alert-danger mt-2">{{ $message }}</div>
+                            @enderror
+                        </div>
 
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-group mb-3">
-                                        <label class="font-weight-bold">PRICE</label>
-                                        <input type="number" id="price" class="form-control @error('price') is-invalid @enderror" name="price" value="{{ old('price') }}" placeholder="Masukkan Harga Product">
-                                    
-                                        <!-- error message untuk price -->
-                                        @error('price')
-                                            <div class="alert alert-danger mt-2">
-                                                {{ $message }}
-                                            </div>
-                                        @enderror
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group mb-3">
-                                        <label class="font-weight-bold">STOCK</label>
-                                        <input type="number" id="stock" class="form-control @error('stock') is-invalid @enderror" name="stock" value="{{ old('stock') }}" placeholder="Masukkan Stock Product">
-                                    
-                                        <!-- error message untuk stock -->
-                                        @error('stock')
-                                            <div class="alert alert-danger mt-2">
-                                                {{ $message }}
-                                            </div>
-                                        @enderror
-                                    </div>
+                        <div class="form-group mb-3">
+                            <label class="font-weight-bold">TITLE</label>
+                            <input type="text" class="form-control @error('title') is-invalid @enderror" id="title" name="title" value="{{ old('title') }}" placeholder="Enter Product Title">
+
+                            @error('title')
+                                <div class="alert alert-danger mt-2">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label class="font-weight-bold">DESCRIPTION</label>
+                            <textarea class="form-control @error('description') is-invalid @enderror" id="description" name="description" rows="5" placeholder="Enter Product Description">{{ old('description') }}</textarea>
+
+                            @error('description')
+                                <div class="alert alert-danger mt-2">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label class="font-weight-bold">PRICE</label>
+                                    <input type="number" class="form-control @error('price') is-invalid @enderror" id="price" name="price" value="{{ old('price') }}" placeholder="Enter Product Price">
+
+                                    @error('price')
+                                        <div class="alert alert-danger mt-2">{{ $message }}</div>
+                                    @enderror
                                 </div>
                             </div>
 
-                            <div class="form-group mb-3">
-                                <label class="font-weight-bold" for="">File</label>
-                                <input type="file" id="file" class="form-control @error('file') is-invalid @enderror" name="file" value="{{ old('file')}}" placeholder="Masukan File">
-                                @error('file')
-                                    <div class="alert alert-danger mt-2">
-                                        {{ $message }}
-                                    </div>
-                                @enderror
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label class="font-weight-bold">STOCK</label>
+                                    <input type="number" class="form-control @error('stock') is-invalid @enderror" id="stock" name="stock" value="{{ old('stock') }}" placeholder="Enter Product Stock">
+
+                                    @error('stock')
+                                        <div class="alert alert-danger mt-2">{{ $message }}</div>
+                                    @enderror
+                                </div>
                             </div>
 
-                            <button type="submit" class="btn btn-md btn-primary me-3">SAVE</button>
-                            <button type="reset" class="btn btn-md btn-warning">RESET</button>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label class="font-weight-bold">DOCUMENT</label>
+                                    <input type="file" class="form-control @error('file') is-invalid @enderror" name="file" id="file">
 
-                        </form> 
-                    </div>
+                                    @error('file')
+                                        <div class="alert alert-danger mt-2">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-md btn-primary me-3">SAVE</button>
+                        <button type="reset" class="btn btn-md btn-warning">RESET</button>
+
+                    </form>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    {{-- <script src="https://cdn.ckeditor.com/ckeditor5/43.2.0/ckeditor5.umd.js"></script> --}}
+@endsection
 
-    <script src="https://cdn.ckeditor.com/4.13.1/standard/ckeditor.js"></script>
+@push('scripts')
+
     <script>
         CKEDITOR.replace( 'description' );
-    </script>
-    <script>
-        async function refreshToken() {
-            const token = localStorage.getItem('token');
 
-            if (!token) {
-                console.log('Token not found');
-            }
+        // async function refreshToken() {
+        //     const token = localStorage.getItem('token');
 
-            try {
-                const response = await fetch('http://127.0.0.1:8000/api/refresh-token-api', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json',
-                    },
-                });
-                const data = await response.json();
-                console.log(data)
+        //     if (!token) {
+        //         console.log('Token not found');
+        //     }
 
-                if (response.ok) {
-                    localStorage.setItem('token', data.token);
-                    return data.token;
-                } else {
-                    window.location.href = "{{ route('login') }}";
-                }
-            } catch (error) {
-                console.error('Token refresh failed:', error);
-                window.location.href = "{{ route('login') }}";
-            }
-        }
+        //     try {
+        //         const response = await fetch('http://127.0.0.1:8000/api/refresh-token-api', {
+        //             method: 'POST',
+        //             headers: {
+        //                 'Authorization': `Bearer ${token}`,
+        //                 'Content-Type': 'application/json',
+        //             },
+        //         });
+        //         const data = await response.json();
+        //         console.log(data)
+
+        //         if (response.ok) {
+        //             localStorage.setItem('token', data.token);
+        //             return data.token;
+        //         } else {
+        //             window.location.href = "{{ route('login') }}";
+        //         }
+        //     } catch (error) {
+        //         console.error('Token refresh failed:', error);
+        //         window.location.href = "{{ route('login') }}";
+        //     }
+        // }
 
         async function submitForm(event) {
             event.preventDefault();
@@ -184,19 +162,28 @@
                 }
 
                 if (response.status === 201) {
-                    window.location.href = "{{ route('products.index') }}"
+                    Swal.fire({
+                        title: 'Data berhasil disimpan',
+                        icon: 'success',
+                    });
+
+                    setTimeout(function() {
+                        window.location.href = "{{ route('products.index') }}"
+                    }, 2000);
+
                 } else {
                     alert(data.message);
                 }
 
 
             } catch (error) {
-                if (error.message.includes('401')) {
-                    await refreshToken()
+                // if (error.message.includes('401')) {
+                //     await refreshToken()
 
-                    submitForm()
-
-                }
+                //     submitForm()
+                // }
+                console.error(error)
+                
             }
         }
 
@@ -204,5 +191,4 @@
 
 
     </script>
-</body>
-</html>
+@endpush

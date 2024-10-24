@@ -67,8 +67,11 @@ class ProductController extends Controller
         // $products = Product::all();
 
         $perPage = $request->input('per_page', 10);
+        $sortBy = $request->input('sort_by', 'id');
+        $sortDirection = $request->input('sort_direction', 'asc');
+
         
-        $products = Product::paginate($perPage);
+        $products = Product::orderBy($sortBy, $sortDirection)->paginate($perPage);
 
         $role = Auth::guard('api')->user()->role;
 
@@ -82,7 +85,7 @@ class ProductController extends Controller
                     'description'   => $product->description,
                     'stock'         => $product->stock,
                     'file'          => $product->file,
-                'actions'           => $this->getActionButtons($product, $role)
+                    'actions'       => $this->getActionButtons($product, $role)
                 ];
             }),
             'pagination' => [
@@ -93,7 +96,22 @@ class ProductController extends Controller
                 'next_page_url' => $products->nextPageUrl(),
                 'prev_page_url' => $products->previousPageUrl(),
             ]
-        ]);
+        ], 200);
+
+        // test produk kosong untuk uji coba
+        // $products = collect();  // Empty collection, or use: Product::where('id', -1)->paginate($perPage);
+
+        // return response()->json([
+        //     'data' => $products,
+        //     'pagination' => [
+        //         'total'         => 0,
+        //         'per_page'      => $perPage,
+        //         'current_page'  => 1,
+        //         'last_page'     => 1,
+        //         'next_page_url' => null,
+        //         'prev_page_url' => null,
+        //     ]
+        // ]);
 
 
         // return DataTables::of($products)
