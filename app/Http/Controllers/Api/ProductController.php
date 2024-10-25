@@ -69,9 +69,10 @@ class ProductController extends Controller
         $perPage = $request->input('per_page', 10);
         $sortBy = $request->input('sort_by', 'id');
         $sortDirection = $request->input('sort_direction', 'asc');
+        $search = $request->input('search');
 
         
-        $products = Product::orderBy($sortBy, $sortDirection)->paginate($perPage);
+        $products = Product::where('title', 'like', '%' . $search . '%')->orderBy($sortBy, $sortDirection)->paginate($perPage);
 
         $role = Auth::guard('api')->user()->role;
 

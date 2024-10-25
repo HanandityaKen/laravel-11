@@ -11,9 +11,13 @@
                 {{-- @if ($role === 'admin')
                     <a href="{{ route('products.create') }}" class="btn btn-md btn-success mb-3">ADD PRODUCT</a>
                 @endif --}}
-                <div id="roleActions"></div>
                 <div class="d-flex justify-content-between align-items-center">
-
+                    <div id="roleActions"></div>
+                    <div id="filterAction">
+                        <button class="btn btn-md btn-success mb-3" id="filterButton">FILTER</button>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
                     <div id="show-perPage">
                         <label for="perPage">Show per page:</label>
                         <select id="perPage" class="custom-select custom-select-sm form-control form-control-sm" style="width: auto;">
@@ -23,20 +27,26 @@
                             <option value="100">100</option>
                         </select>
                     </div>
-                    <div id="orderByPage">
-                        <label for="sortBy">Urutkan Berdasarkan:</label>
-                        <select id="sortBy" class="custom-select custom-select-sm form-control form-control-sm" style="width: auto;">
-                            <option value="id" selected>ID</option> 
-                            <option value="title">Judul</option>
-                            <option value="price">Harga</option>
-                            <option value="stock">Stok</option>
-                        </select>
-    
-                        <label for="sortDirection">Arah:</label>
-                        <select id="sortDirection" class="custom-select custom-select-sm form-control form-control-sm" style="width: auto;">
-                            <option value="asc" selected>Ascending</option> 
-                            <option value="desc">Descending</option>
-                        </select>
+                    <div id="filterContent" class="d-flex">
+                        <div class="" id="orderByPage">
+                            <label for="sortBy">Sort By:</label>
+                            <select id="sortBy" class="custom-select custom-select-sm form-control form-control-sm" style="width: auto;">
+                                <option value="id" selected>ID</option> 
+                                <option value="title">Judul</option>
+                                <option value="price">Harga</option>
+                                <option value="stock">Stok</option>
+                            </select>
+        
+                            <label for="sortDirection"></label>
+                            <select id="sortDirection" class="custom-select custom-select-sm form-control form-control-sm" style="width: auto;">
+                                <option value="asc" selected>Ascending</option> 
+                                <option value="desc">Descending</option>
+                            </select>
+                        </div>
+                        <div id="searchData" class="d-flex ml-4">
+                            <label for="search">Search:</label>
+                            <input type="text" id="search" class="form-control form-control-sm ml-1">
+                        </div>
                     </div>
                 </div>
                 <br>
@@ -61,10 +71,10 @@
                         <div class="data-info">
                             Total Products: <span id="total-data">0</span>
                         </div>                
-                        <div id="pagination-controls">
-                            <button id="prev-page" disabled>Previous</button>
-                            <span id="current-page">1</span>
-                            <button id="next-page" disabled>Next</button>
+                        <div class="btn-group" role="group" id="pagination-controls">
+                            <button class="btn btn-sm form-control" id="prev-page" disabled>Previous</button>
+                            <span class="btn btn-sm" id="current-page">1</span>
+                            <button class="btn btn-sm form-control" id="next-page" disabled>Next</button>
                         </div>
                     </div>
                 </div>
@@ -126,18 +136,20 @@
     document.addEventListener('DOMContentLoaded', function() {
         getRole();
         renderTable();
+        document.getElementById('filterButton').addEventListener('click', filterButton);
     });
 
     let currentPage = 1;
     let itemsPerPage = 10;
     let sortBy = 'id';
     let sortDirection = 'asc';
+    let search = '';
 
-    async function renderTable(page = currentPage, perPage = itemsPerPage, itemsSortBy = sortBy, itemsSortDirection = sortDirection) {
+    async function renderTable(page = currentPage, perPage = itemsPerPage, itemsSortBy = sortBy, itemsSortDirection = sortDirection, searchItem = search) {
         const token = localStorage.getItem('token')
 
         try {
-            const response = await fetch(`http://127.0.0.1:8000/api/products-data-api?page=${page}&per_page=${perPage}&sort_by=${itemsSortBy}&sort_direction=${itemsSortDirection}`, {
+            const response = await fetch(`http://127.0.0.1:8000/api/products-data-api?page=${page}&per_page=${perPage}&sort_by=${itemsSortBy}&sort_direction=${itemsSortDirection}&search=${encodeURIComponent(searchItem)}`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -151,6 +163,9 @@
 
             const data = await response.json()
 
+            const tbody = document.querySelector('#productsTable tbody');
+            tbody.innerHTML = '';
+
             if (!data.data.length) {
                 const row = `
                     <tr>
@@ -158,11 +173,21 @@
                     </tr>
                 `;
 
-                tbody.insertAdjacentHTML('beforeend', row);     
+                tbody.insertAdjacentHTML('beforeend', row);
+                document.getElementById('total-data').textContent = 0;
+                return;
             }
-            
-            const tbody = document.querySelector('#productsTable tbody');
-            tbody.innerHTML = '';
+
+            if (data.pagination.total === 0) {
+                const row = `
+                    <tr>
+                        <td colspan="8" style="text-align: center;">Data Not Found</td>
+                    </tr>
+                `;
+
+                tbody.insertAdjacentHTML('beforeend', row);     
+                return;
+            }
 
             //jquery
             // const tbody = $('#productsTable tbody')
@@ -205,32 +230,29 @@
     document.getElementById('prev-page').addEventListener('click', () => {
         if (currentPage > 1) {
             currentPage--;
-            renderTable(currentPage, itemsPerPage, sortBy, sortDirection);
+            renderTable(currentPage, itemsPerPage, sortBy, sortDirection, search);
         }
     });
 
     document.getElementById('next-page').addEventListener('click', () => {
         currentPage++;
-        renderTable(currentPage, itemsPerPage, sortBy, sortDirection);
+        renderTable(currentPage, itemsPerPage, sortBy, sortDirection, search);
     });
 
-    document.getElementById('perPage').addEventListener('change', (event) => {
-        itemsPerPage = event.target.value;
-        currentPage = 1; // reset ke halaman pertama
-        renderTable(currentPage, itemsPerPage, sortBy, sortDirection);
-    });
+    async function filterButton() {
+        itemsPerPage = document.getElementById('perPage').value;
+        currentPage = 1;
 
-    document.getElementById('sortBy').addEventListener('change', updateSort);
-    document.getElementById('sortDirection').addEventListener('change', updateSort);
-
-    async function updateSort() {
         sortBy = document.getElementById('sortBy').value;
         sortDirection = document.getElementById('sortDirection').value;
 
-        await renderTable(currentPage, itemsPerPage, sortBy, sortDirection)
+        search = document.getElementById('search').value;
+
+        await renderTable(currentPage, itemsPerPage, sortBy, sortDirection), search;
     }
 
-    renderTable(currentPage, itemsPerPage, sortBy, sortDirection);
+    // renderTable(currentPage, itemsPerPage, sortBy, sortDirection);
+
 
     document.getElementById('productsTable').addEventListener('click', async function(event) {
         if (event.target.classList.contains('delete-product')) {
@@ -274,7 +296,7 @@
                             )
                         }
                     } catch (error) {
-                        await refreshToken('401')
+                        await refreshToken(401)
                         getRole()               
                     }
                 }
@@ -311,7 +333,7 @@
             }
 
         } catch (error) {
-            await refreshToken('401')
+            await refreshToken(401)
             getRole()
 
             // if (error.message.includes('401')) {
@@ -338,6 +360,24 @@
     //         timer: 2000
     //     });
     // @endif
+
+
+    // document.getElementById('perPage').addEventListener('change', (event) => {
+    //     itemsPerPage = event.target.value;
+    //     currentPage = 1; // reset ke halaman pertama
+    //     renderTable(currentPage, itemsPerPage, sortBy, sortDirection);
+    // });
+
+    // document.getElementById('sortBy').addEventListener('change', updateSort);
+    // document.getElementById('sortDirection').addEventListener('change', updateSort);
+
+    // async function updateSort() {
+    //     sortBy = document.getElementById('sortBy').value;
+    //     sortDirection = document.getElementById('sortDirection').value;
+
+    //     await renderTable(currentPage, itemsPerPage, sortBy, sortDirection)
+    // }
+
 
     // $(document).ready(function() {
 

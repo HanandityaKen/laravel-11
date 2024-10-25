@@ -204,36 +204,36 @@
 
 </nav>
 
-  <!-- Optional JavaScript; choose one of the two! -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
+<!-- Optional JavaScript; choose one of the two! -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
     document.getElementById('logoutButton').addEventListener('click', async function() {
-      const token = localStorage.getItem('token');
-      // const email = sessionStorage.getItem('email');
+        const token = localStorage.getItem('token');
+        // const email = sessionStorage.getItem('email');
 
-      // console.log(token)
-      // console.log(email)
+        // console.log(token)
+        // console.log(email)
 
-      try {
-          const response = await fetch('http://127.0.0.1:8000/api/logout-api', {
-              method: 'POST',
-              headers: {
-                  'Authorization': `Bearer ${token}`,
-                  'Accept': 'application/json'
-              }
-          });
+        try {
+            const response = await fetch('http://127.0.0.1:8000/api/logout-api', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json'
+                }
+            });
 
-          if (response.ok) {
-              localStorage.removeItem('token');
-              sessionStorage.removeItem('email');
-              window.location.href = "{{ route('login') }}"; // Ganti dengan rute login yang sesuai
-          } else {
-              console.error('Logout failed:', await response.json());
-          }
-      } catch (error) {
-          console.error('Logout request failed:', error);
-      }
+            if (response.ok) {
+                localStorage.removeItem('token');
+                sessionStorage.removeItem('email');
+                window.location.href = "{{ route('login') }}"; // Ganti dengan rute login yang sesuai
+            } else {
+                console.error('Logout failed:', await response.json());
+            }
+        } catch (error) {
+            console.error('Logout request failed:', error);
+        }
     });
-  </script>
+</script>
 </body>
 </html>
