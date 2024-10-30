@@ -5,7 +5,7 @@
 
     <div class="card shadow mb-4">
         <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">DataTables Example</h6>
+            <h6 class="m-0 font-weight-bold text-primary">Table Data</h6>
         </div>
             <div class="card-body">
                 {{-- @if ($role === 'admin')
@@ -248,7 +248,7 @@
 
         search = document.getElementById('search').value;
 
-        await renderTable(currentPage, itemsPerPage, sortBy, sortDirection), search;
+        await renderTable(currentPage, itemsPerPage, sortBy, sortDirection, search);
     }
 
     // renderTable(currentPage, itemsPerPage, sortBy, sortDirection);
@@ -307,7 +307,7 @@
 
     async function getRole() {
         const token = localStorage.getItem('token');
-        console.log(token)
+        // console.log(token)
 
         try {
             const response = await fetch('http://127.0.0.1:8000/api/products-role-api', {
@@ -324,7 +324,7 @@
 
             const roleData = await response.json();
             const role = roleData.role;
-            console.log(role);
+            // console.log(role);
 
             if (role === 'admin') {
                 document.getElementById('roleActions').innerHTML = `

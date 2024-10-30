@@ -180,7 +180,7 @@
             <!-- Dropdown - User Information -->
             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
                 aria-labelledby="userDropdown">
-                <a class="dropdown-item" href="#">
+                <a class="dropdown-item" href="" id="profileLink">
                     <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
                     Profile
                 </a>
@@ -207,6 +207,41 @@
 <!-- Optional JavaScript; choose one of the two! -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+
+    document.getElementById('profileLink').addEventListener('click', profileButton)
+
+
+    async function profileButton() {
+        const token = localStorage.getItem('token');
+
+        try {
+            const response = await fetch('http://127.0.0.1:8000/api/user-api', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const user = await response.json();
+            const id = user.id;
+
+            window.location.href = `/profile-user/${id}`;
+
+
+        } catch (error) {
+            await refreshToken(401)
+            profileButton()
+            // console.error()
+        }
+    }
+
+
+
     document.getElementById('logoutButton').addEventListener('click', async function() {
         const token = localStorage.getItem('token');
         // const email = sessionStorage.getItem('email');

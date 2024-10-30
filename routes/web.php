@@ -18,6 +18,14 @@ Route::get('/products-data', [\App\Http\Controllers\ProductController::class, 'g
 Route::get('/products-show/{id}', [\App\Http\Controllers\ProductController::class, 'show'])->name('products.show');
 Route::get('/products/{id}/edit', [\App\Http\Controllers\ProductController::class, 'edit'])->name('products.edit');
 
+
+Route::get('/profile-user/{id}', [\App\Http\Controllers\UserController::class, 'index'])->name('profile-user.index');
+
+
+
+
+
+
 // // Rute produk yang dilindungi middleware checkRole
 // Route::middleware(['auth','checkRole'])->group(function () {
 //   Route::get('/products', [\App\Http\Controllers\ProductController::class, 'index'])->name('products.index');

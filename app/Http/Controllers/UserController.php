@@ -10,10 +10,8 @@ use Illuminate\View\View;
 
 class UserController extends Controller
 {
-    public function index() : View
+    public function index(string $name) : View
     {
-        $products = Product::latest()->paginate(10);
-
-        return view('users.index', compact('products'));
+        return view('users.index');
     }
 }

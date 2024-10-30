@@ -172,45 +172,106 @@ class ProductController extends Controller
         return '<a href="'. route('products.show', $product->id) .'" class="btn btn-sm btn-dark">Show</a>';
     }
 
+    // public function store(Request $request)
+    // {
+    //     $request->validate([
+    //         'images'        => 'required|image|mimes:jpeg,jpg,png|max:2048',
+    //         'title'         => 'required|min:5',
+    //         'description'   => 'required|min:10',
+    //         'price'         => 'required|numeric',
+    //         'stock'         => 'required|numeric',
+    //         'file'          => 'required|mimes:pdf|max:5120',
+    //     ]);
+    //     try {
+            
+    //         $images = $request->file('images');
+    //         $images->storeAs('public/products', $images->hashName());
+    
+    //         $file = $request->file('file');
+    //         $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension(); // UUID dengan ekstensi file
+    //         $file->storeAs('public/products/file', $fileName);
+    
+    //         $product = Product::create([
+    //             'images'            => $images->hashName(),
+    //             'title'             => $request->title,
+    //             'description'       => $request->description,
+    //             'price'             => $request->price,
+    //             'stock'             => $request->stock,
+    //             'file'              => $fileName,
+    //         ]);
+    
+    //         return response()->json([
+    //             'message' => 'Data Berhasil Disimpan!',
+    //             'data' => $product,
+    //         ], 201); // HTTP status 201 Created
+    
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'message' => 'Data Gagal Disimpan!',
+    //         ], 500);
+    //     }
+    // }
+
     public function store(Request $request)
     {
+        Log::info('Updating product', $request->all());
+
         $request->validate([
             'images'        => 'required|image|mimes:jpeg,jpg,png|max:2048',
             'title'         => 'required|min:5',
             'description'   => 'required|min:10',
             'price'         => 'required|numeric',
             'stock'         => 'required|numeric',
-            'file'          => 'required|mimes:pdf|max:5120',
+            'file'          => 'required|mimes:pdf,doc,docx|max:5120',
         ]);
+
         try {
-            
-            $images = $request->file('images');
-            $images->storeAs('public/products', $images->hashName());
-    
-            $file = $request->file('file');
-            $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension(); // UUID dengan ekstensi file
-            $file->storeAs('public/products/file', $fileName);
-    
+            // Simpan produk tanpa image dan file terlebih dahulu
             $product = Product::create([
-                'images'            => $images->hashName(),
-                'title'             => $request->title,
-                'description'       => $request->description,
-                'price'             => $request->price,
-                'stock'             => $request->stock,
-                'file'              => $fileName,
+                'title'        => $request->title,
+                'description'  => $request->description,
+                'price'        => $request->price,
+                'stock'        => $request->stock,
+                'images'       => 'temp.jpg', // Nilai sementara untuk kolom image
             ]);
-    
+
+            // Menyimpan image dengan menambahkan ID produk
+            // $image = $request->file('image');
+            // $imageName = $product->id . '_' . $image->hashName();
+            // $image->storeAs('public/products', $imageName);
+            $images = $request->file('images');
+            $imagesName = $product->id . '_' . $images->hashName();
+            $images->storeAs('public/products', $imagesName);
+
+            $product->update(['images' => $imagesName]);
+
+
+            // Menyimpan file dengan nama yang mengandung UUID
+            $file = $request->file('file');
+            $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension();
+            $file->storeAs('public/products/documents', $fileName);
+
+            // Update produk dengan nama file image dan dokumen
+            $product->update([
+                'images' => $imagesName,
+                'file'  => $fileName,
+            ]);
+
             return response()->json([
                 'message' => 'Data Berhasil Disimpan!',
-                'data' => $product,
-            ], 201); // HTTP status 201 Created
-    
+                'data'    => $product,
+            ], 201);
+
         } catch (\Exception $e) {
+            Log::error('Error storing product: ' . $e->getMessage());
+
             return response()->json([
                 'message' => 'Data Gagal Disimpan!',
+                'error'   => $e->getMessage(),
             ], 500);
         }
     }
+
 
     public function update (Request $request, $id)
     {
@@ -228,15 +289,26 @@ class ProductController extends Controller
 
         $product = Product::findOrFail($id);
 
+        // if ($request->file('images')) {
+        //     // delete
+        //     Storage::delete('public/products/'.$product->images);
+
+        //     $images = $request->file('images');
+        //     $images->storeAs('/public/products', $images->hashName());
+
+        //     $product->images = $images->hashName();
+
+        // }
+
         if ($request->file('images')) {
-            // delete
-            Storage::delete('public/products/'.$product->images);
+            // Hapus gambar lama
+            Storage::delete('public/products/' . $product->images);
 
             $images = $request->file('images');
-            $images->storeAs('/public/products', $images->hashName());
+            $imagesName = $product->id . '_' . $images->hashName(); // Menambahkan ID produk pada nama file
+            $images->storeAs('public/products', $imagesName);
 
-            $product->images = $images->hashName();
-
+            $product->images = $imagesName;
         }
 
         if ($request->file('file')) {
