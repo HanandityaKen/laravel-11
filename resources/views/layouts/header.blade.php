@@ -210,7 +210,6 @@
 
     document.getElementById('profileLink').addEventListener('click', profileButton)
 
-
     async function profileButton() {
         const token = localStorage.getItem('token');
 
@@ -228,9 +227,9 @@
             }
 
             const user = await response.json();
-            const id = user.id;
+            const name = user.name;
 
-            window.location.href = `/profile-user/${id}`;
+            window.location.href = `/profile-user/${name}`;
 
 
         } catch (error) {

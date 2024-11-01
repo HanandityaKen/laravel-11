@@ -22,31 +22,27 @@
                     <h6 class="m-0 font-weight-bold text-primary">Detail Profil</h6>
                 </div>
                 <div class="card-body mb-4">
-                    <form>
-                        <!-- Nama Pengguna -->
-                        {{-- <div class="form-group">
-                            <label>Nama</label>
-                            <input type="text" class="form-control" id="name-user" value="-" disabled>
-                        </div> --}}
+                    <form id="editForm" method="POST" enctype="multipart/form-data">
+                        @csrf
                         <!-- Email Pengguna -->
                         <div class="form-group">
                             <label>Email</label>
-                            <input type="email" class="form-control" id="email-user" value="-">
+                            <input type="email" class="form-control" name="email" id="email-user" value="-">
                         </div>
                         <div class="form-group">
                             <label>Password Lama</label>
-                            <input type="password" class="form-control" id="user-old-pass" value="">
+                            <input type="password" class="form-control" name="old-password" id="user-old-pass" value="">
                         </div>
                         <div class="form-group">
                             <label>Password Baru</label>
-                            <input type="password" class="form-control" id="user-new-pass" value="">
+                            <input type="password" class="form-control" name="new-password" id="user-new-pass" value="">
                         </div>
                         <div class="form-group">
                             <label>Konfirmasi Password</label>
-                            <input type="password" class="form-control" id="user-confirm-pass" value="">
+                            <input type="password" class="form-control" name="confirm-password" id="user-confirm-pass" value="">
                         </div>
                         <!-- Tombol Edit Profil -->
-                        <a href="#" class="btn btn-primary">Edit Profil</a>
+                        <button type="submit" class="btn btn-primary">Edit Profil</button>
                     </form>
                 </div>
             </div>
@@ -58,14 +54,15 @@
         document.addEventListener('DOMContentLoaded', function() {
             getUserData();
             uploadImage();
+            document.getElementById('editForm').addEventListener('submit', editProfile)
+
         })
 
         async function getUserData() {
-            const id = {{ request()->route('id') }};
             const token = localStorage.getItem('token')
 
             try {
-                const response = await fetch(`http://127.0.0.1:8000/api/user-data-api/${id}`, {
+                const response = await fetch(`http://127.0.0.1:8000/api/user-data-api`, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -98,7 +95,7 @@
         }
 
         async function uploadImage() {
-            const id = {{ request()->route('id') }};
+            // const id = {{ request()->route('id') }};
             const token = localStorage.getItem('token')
 
             document.getElementById('buttonUploadPhoto').addEventListener('click', function() {
@@ -122,7 +119,7 @@
                 }).then(async(result) => {
                     if (result.isConfirmed){
                         try {
-                            const response = await fetch(`http://127.0.0.1:8000/api/user-upload-photo-api/${id}`, {
+                            const response = await fetch(`http://127.0.0.1:8000/api/user-upload-photo-api`, {
                                 method: 'POST',
                                 headers: {
                                     'Authorization': `Bearer ${token}`,
@@ -143,7 +140,7 @@
                                     getUserData()
                                 })
                             } else {
-                                alert(data.message);
+                                // alert(data.message);
                             }
                         } catch (error) {
                             await refreshToken(401);
@@ -155,6 +152,56 @@
                     }
                 })
             });
+        }
+
+        async function editProfile() {
+            event.preventDefault();
+
+            const token = localStorage.getItem('token');
+
+            const email = document.getElementById('email-user').value;
+            const oldPassword = document.getElementById('user-old-pass').value;
+            const newPassword = document.getElementById('user-new-pass').value;
+            const confirmPassword = document.getElementById('user-confirm-pass').value;
+
+            const formData = new FormData();
+            formData.append('email', email);
+            formData.append('old_password', oldPassword);
+            formData.append('new_password', newPassword);
+            formData.append('confirm_password', confirmPassword);
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/api/user-update-api', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json'
+                    },
+                    body: formData,
+                })
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                Swal.fire({
+                    title: 'Data berhasil diupdate',
+                    icon: 'success'
+                }).then(() => {
+                    getUserData()
+                    console.log('test reload')
+                })
+            } catch (error) {
+                if (error.message.includes('401')) {
+                    await refreshToken()
+                    editProfile()
+                } else if (error.message.includes('400')) {
+                    Swal.fire({
+                        title: 'Data yang dimasukan salah',
+                        icon: 'error'
+                    })
+                }
+            }
         }
     </script>
 @endpush

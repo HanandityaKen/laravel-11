@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Str;
 
@@ -21,14 +22,16 @@ class UserController extends Controller
             ], 401);
         }
 
-        $id = $user->id;
+        $name = $user->name;
 
         return response()->json([
-            'id' => $id
+            'name' => $name
         ], 200);
     }
 
-    public function getUserData(Request $request, $id) {
+    public function getUserData(Request $request) {
+        $id = JWTAuth::getPayload()->get('id');
+
         $user =  User::findOrFail($id);
 
         return response()->json([
@@ -37,11 +40,14 @@ class UserController extends Controller
         ], 200);
     }
 
-    public function uploadImage(Request $request, $id) {
+    public function uploadImage(Request $request) {
         
         $request->validate([
             'photo' => 'image|mimes:jpeg,jpg,png',
         ]);
+
+
+        $id = JWTAuth::getPayload()->get('id');
 
         $user = User::findOrFail($id);
 
@@ -50,10 +56,9 @@ class UserController extends Controller
             Storage::delete('public/user/'.$user->photo);
         }
 
-        $name = JWTAuth::getPayload()->get('name');
 
         $photo = $request->file('photo');
-        $photoName = $name .'_'. Str::uuid() .'.' . $photo->getClientOriginalExtension();
+        $photoName = $id .'_'. Str::uuid() .'.' . $photo->getClientOriginalExtension();
         $photo->storeAs('public/user', $photoName);
 
         $user->photo = $photoName;
@@ -64,13 +69,30 @@ class UserController extends Controller
         ], 200);
     }
 
-    public function updateUserProfile (Request $request, $id) {
+    public function updateUserProfile (Request $request) {
+
+        $request->validate([
+            'email'     => 'required|email',
+            'old_password'  => 'required',
+            'new_password'  => 'required',
+            'confirm_password' => 'required',
+        ]);
+
+        $id = JWTAuth::getPayload()->get('id');
+
         $user = User::findOrFail($id);
 
-        $user->update([
-            'email'     => $request->name,
-            'password'     => $request->password,
-        ]);
+        if (!Hash::check($request->old_password, $user->password)) {
+            return response()->json(['error' => 'Password lama tidak sesuai'], 400);
+        }
+
+        if ($request->new_password !== $request->confirm_password) {
+            return response()->json(['error' => 'Konfirmasi password baru salah'], 400);            
+        }
+
+        $user->email = $request->email;
+        $user->password = Hash::make($request->new_password);
+        $user->save();
 
         return response()->json([
             'message' => 'Data berhasil diperbarui',

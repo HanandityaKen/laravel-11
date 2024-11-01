@@ -19,9 +19,9 @@ Route::middleware(['checkToken'])->group(function () {
 
   //User
   Route::get('/user-api', [\App\Http\Controllers\Api\UserController::class, 'getUser'])->name('user.api');
-  Route::get('/user-data-api/{id}', [\App\Http\Controllers\Api\UserController::class, 'getUserData'])->name('user.data.api');
-  Route::post('/user-upload-photo-api/{id}', [\App\Http\Controllers\Api\UserController::class, 'uploadImage'])->name('user.uploadimage.api');
-  Route::post('/user-update-api/{id}', [\App\Http\Controllers\Api\UserController::class, 'updateUserProfile'])->name('user.update.api');
+  Route::get('/user-data-api', [\App\Http\Controllers\Api\UserController::class, 'getUserData'])->name('user.data.api');
+  Route::post('/user-upload-photo-api', [\App\Http\Controllers\Api\UserController::class, 'uploadImage'])->name('user.uploadimage.api');
+  Route::post('/user-update-api', [\App\Http\Controllers\Api\UserController::class, 'updateUserProfile'])->name('user.update.api');
 });
 
 // Route::middleware(['auth:api'])->group(function () {
